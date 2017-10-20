@@ -15,7 +15,7 @@ router.post('/generateTeam', function(req, res) {
 
     //If team name contains anything other than letters, use default string 'ABCD' as player name prefix
     if(!/^[a-z]+$/i.test(teamName)){
-        teamName = 'ABCD';
+        teamName = 'ABCD12';
     }
     generateTotalScores(teamName, function(roster){
         res.send(roster);
@@ -24,8 +24,8 @@ router.post('/generateTeam', function(req, res) {
 
 var generateTotalScores = function(teamName, callBack){
     //3 sets of values possible for "total attribute score" for each player
-    const set1Min = 4, set1Max = 15;
-    const set2Min = 16, set2Max = 25;
+    const set1Min = 3, set1Max = 18;
+    const set2Min = 19, set2Max = 25;
     const set3Min = 26, set3Max = 100;
 
     //Probability of each set above
@@ -87,16 +87,25 @@ var generateTotalScores = function(teamName, callBack){
             probability1 = 68;
         }
     }
-    generatePlayerSkills(teamName, totalScores, callBack);
+
+    generatePlayerSkills(teamName, totalScores, totalAttributeScore, callBack);
 }
 
-var generatePlayerSkills = function(teamName, totalScores, callBack){
-    var roster = [];
-
+var generatePlayerSkills = function(teamName, totalScores, totalTeamScore, callBack){
+    var roster = {
+        starters:    [],
+        substitutes:    []
+    };
+    var playerList = [];
     for(var i = 0; i < totalScores.length; i++){
         var player = {};
         //Generate player name in a sequence of alphanumeric values
-        player.Name = teamName + '123' + (i+1);
+        if(i < 10) {
+            player.Name = teamName + '120' + i;
+        }
+        else{
+            player.Name = teamName + '12' + i;
+        }
 
         //Generate player's skill values from total score
         player.totalScore = totalScores[i];
@@ -109,8 +118,23 @@ var generatePlayerSkills = function(teamName, totalScores, callBack){
         //Third skill point will be totalScore - firstSkill - secondSkill point
         player.Agility = player.totalScore - player.Strength - player.Speed;
 
-        roster.push(player)
+        playerList.push(player)
     }
+
+    //Sort the roster according to the total score and put 10 players in starters and 5 in substitute
+    playerList.sort(function(a, b){
+       return b.totalScore - a.totalScore;
+    });
+    for(var i = 0; i < 15; i++){
+        if(i < 10){
+            roster.starters.push(playerList[i]);
+        }
+        else{
+            roster.substitutes.push(playerList[i]);
+        }
+    }
+
+    roster.totalTeamScore = totalTeamScore;
 
     callBack(roster);
 }
