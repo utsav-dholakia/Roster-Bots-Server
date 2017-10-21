@@ -1,4 +1,4 @@
-# Roster-Bots
+# Roster-Bots-Server
 
 This is a server side application for creating roster of bots with generic attributes.
 It creates a server utilizing Node.js that provides REST service to generate roster of players. The only data needed in the request is team name that will be prefixed to the bot names. (This is optional)
